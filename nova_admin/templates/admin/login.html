@@ -1,4 +1,4 @@
-{% load i18n static %}
+{% load i18n static nova_admin_tags %}
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
@@ -11,21 +11,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            display: ['Space Grotesk', 'sans-serif'],
-          }
-        }
-      }
+  <!-- Dynamic Brand Styles support -->
+  {% get_nova_settings as nova_settings %}
+  <style>
+    :root {
+      --color-primary: {{ nova_settings.PRIMARY_COLOR|default:"#2563EB" }};
     }
-  </script>
+  </style>
 
   <link rel="stylesheet" href="{% static 'nova_admin/css/theme.css' %}" />
   <script src="{% static 'nova_admin/js/theme.js' %}"></script>

@@ -18,40 +18,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS Play CDN (Highly recommended for reusable Django theme packages to run instantly) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            display: ['Space Grotesk', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            primary: '{{ nova_settings.PRIMARY_COLOR|default:"#2563EB" }}',
-            success: '#10B981',
-            warning: '#F59E0B',
-            danger: '#EF4444',
-            bgLight: '#F8FAFC',
-            bgDark: '#0F172A',
-          },
-          boxShadow: {
-            premium: '0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 8px -1px rgba(15, 23, 42, 0.02)',
-            hover: '0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 16px -6px rgba(15, 23, 42, 0.04)',
-          },
-          borderRadius: {
-            custom: '16px',
-          }
-        }
-      }
+  <style>
+    :root {
+      --color-primary: {{ nova_settings.PRIMARY_COLOR|default:"#2563EB" }};
     }
-  </script>
+  </style>
 
-  <!-- Alpine.js Core -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Alpine.js Core served locally -->
+  <script defer src="{% static 'nova_admin/js/alpine.js' %}"></script>
 
   <!-- Nova Admin Custom theme files -->
   <link rel="stylesheet" href="{% static 'nova_admin/css/theme.css' %}" />
