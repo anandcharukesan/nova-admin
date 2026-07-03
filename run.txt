@@ -1,0 +1,18 @@
+I recommend this workflow:
+
+# Only if frontend changed
+npm run build
+
+# Test Python package
+pip install -e .
+
+# Create a wheel
+python -m build
+
+# Test installation in a fresh Django project
+pip install dist/django_nova_admin-1.0.0-py3-none-any.whl
+
+# If everything works
+git add .
+git commit -m "Release v1.0.0"
+git push

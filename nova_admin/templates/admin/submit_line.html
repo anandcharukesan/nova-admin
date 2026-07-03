@@ -1,0 +1,21 @@
+{% load i18n admin_urls %}
+<div class="submit-row flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+{% block submit-row %}
+{% if show_delete_link and original %}
+    <p class="deletelink-box w-full sm:w-auto">
+        <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" class="deletelink px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 dark:hover:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 transition-colors flex items-center justify-center gap-1.5 font-semibold text-xs">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>{% translate "Delete" %}</span>
+        </a>
+    </p>
+{% endif %}
+<div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto sm:ml-auto">
+{% if show_save_as_new %}<input type="submit" value="{% translate 'Save as new' %}" name="_saveasnew" class="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer transition-colors text-xs font-semibold">{% endif %}
+{% if show_add_another %}<input type="submit" value="{% translate 'Save and add another' %}" name="_addanother" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer transition-colors text-xs font-semibold">{% endif %}
+{% if show_save_and_continue %}<input type="submit" value="{% if can_change %}{% translate 'Save and continue editing' %}{% else %}{% translate 'Save and view' %}{% endif %}" name="_continue" class="w-full sm:w-auto px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 rounded-xl cursor-pointer transition-colors text-xs font-semibold">{% endif %}
+{% if show_save %}<input type="submit" value="{% translate 'Save' %}" class="default w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-500/10 cursor-pointer transition-all text-xs font-semibold" name="_save">{% endif %}
+</div>
+{% endblock %}
+</div>

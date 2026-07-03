@@ -19,10 +19,14 @@ nova_admin/templates/admin/base.html
 nova_admin/templates/admin/base_site.html
 nova_admin/templates/admin/change_form.html
 nova_admin/templates/admin/change_list.html
+nova_admin/templates/admin/change_list_object_tools.html
+nova_admin/templates/admin/change_list_results.html
 nova_admin/templates/admin/delete_confirmation.html
 nova_admin/templates/admin/index.html
 nova_admin/templates/admin/login.html
 nova_admin/templates/admin/object_history.html
+nova_admin/templates/admin/search_form.html
+nova_admin/templates/admin/submit_line.html
 nova_admin/templatetags/__init__.py
 nova_admin/templatetags/nova_admin_tags.py
 nova_admin/utils/__init__.py

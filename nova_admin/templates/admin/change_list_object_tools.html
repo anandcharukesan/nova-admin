@@ -1,0 +1,12 @@
+{% load i18n admin_urls %}
+{% block object-tools-items %}
+  {% if has_add_permission %}
+    {% url cl.opts|admin_urlname:'add' as add_url %}
+    <a href="{% add_preserved_filters add_url %}" class="px-3.5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-xl shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 transition-all flex items-center gap-1.5">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>{% blocktranslate with name=cl.opts.verbose_name %}Add {{ name }}{% endblocktranslate %}</span>
+    </a>
+  {% endif %}
+{% endblock %}
