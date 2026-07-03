@@ -1,7 +1,8 @@
 include LICENSE
 include README.md
+
 recursive-include nova_admin/templates *
 recursive-include nova_admin/static *
-global-exclude *.pyc
+
+global-exclude *.py[cod]
 global-exclude __pycache__
-global-exclude .DS_Store

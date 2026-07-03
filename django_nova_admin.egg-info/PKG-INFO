@@ -1,24 +1,28 @@
 Metadata-Version: 2.4
 Name: django-nova-admin
 Version: 1.0.0
-Summary: A premium, modern, responsive Django admin theme package built with Tailwind CSS and Alpine.js.
-Author-email: Nova Admin Team <support@novaadmin.com>
+Summary: A premium, modern, responsive Django admin theme built with Tailwind CSS and Alpine.js.
+Author-email: Anand Charukesan <your-email@example.com>
 License: Apache-2.0
+Project-URL: Homepage, https://github.com/anandcharukesan/nova-admin
+Project-URL: Repository, https://github.com/anandcharukesan/nova-admin
+Project-URL: Issues, https://github.com/anandcharukesan/nova-admin/issues
+Project-URL: Documentation, https://github.com/anandcharukesan/nova-admin#readme
+Keywords: django,django-admin,admin,theme,dashboard,tailwind,alpinejs,django-theme,admin-theme
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Web Environment
 Classifier: Framework :: Django
 Classifier: Framework :: Django :: 4.2
-Classifier: Framework :: Django :: 5.0
-Classifier: Framework :: Django :: 5.1
+Classifier: Framework :: Django :: 5
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Operating System :: OS Independent
-Classifier: Programming Language :: Python
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
-Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Internet :: WWW/HTTP
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
