@@ -1,11 +1,17 @@
 {% load i18n static nova_admin_tags %}
+
 <!DOCTYPE html>
-{% get_current_language as LANGUAGE_CODE %}{% get_current_language_direction as LANGUAGE_BIDI %}
-<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:"rtl,ltr" }}" class="h-full">
+
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+
+<html lang="{{ LANGUAGE_CODE|default:'en-us' }}"
+      dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}"
+      class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}{% endblock %}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{% endblock %}</title>
 
   <!-- Google Fonts: Inter (SANS), Space Grotesk (Display), JetBrains Mono (Technical) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
