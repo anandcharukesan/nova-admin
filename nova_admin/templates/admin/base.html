@@ -71,6 +71,7 @@
     searchQuery: '',
     shortcutsModalOpen: false,
     scrolled: false,
+    currentTheme: localStorage.getItem('nova_admin_theme') || 'auto',
     init() {
       window.addEventListener('scroll', () => { this.scrolled = window.scrollY > 10; });
       window.addEventListener('toggle-command-palette', () => { this.commandPaletteOpen = !this.commandPaletteOpen; });
@@ -96,7 +97,7 @@
       <div class="h-16 flex items-center justify-between px-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div class="flex items-center gap-3 overflow-hidden" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-x-4">
           {% block sidebar_branding %}
-            {% include "admin/base_site.html" with branding=True %}
+            {% block branding %}{% endblock %}
           {% endblock %}
         </div>
         
@@ -269,17 +270,24 @@
                 class="absolute right-0 mt-1.5 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-premium z-50 overflow-hidden">
                 <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
                   <span class="font-bold text-xs">Notifications</span>
-                  <button class="text-xxs text-blue-600 hover:underline">Mark all as read</button>
                 </div>
                 <div class="divide-y divide-slate-100 dark:divide-slate-700/60 max-h-64 overflow-y-auto">
-                  <a href="#" class="block p-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-                    <p class="text-xs text-slate-800 dark:text-slate-200 leading-tight">System update successfully finished</p>
-                    <span class="text-xxs text-slate-400 block mt-1">12 mins ago · System</span>
-                  </a>
-                  <a href="#" class="block p-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-                    <p class="text-xs text-slate-800 dark:text-slate-200 leading-tight">New user registered: <strong>Sarah Connor</strong></p>
-                    <span class="text-xxs text-slate-400 block mt-1">1 hour ago · Auth</span>
-                  </a>
+                  {% load log %}
+                  {% get_admin_log 5 as admin_log %}
+                  {% if admin_log %}
+                    {% for entry in admin_log %}
+                      <div class="block p-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                        <p class="text-xs text-slate-800 dark:text-slate-200 leading-tight">
+                          {% if entry.is_addition %}Added{% elif entry.is_change %}Modified{% else %}Deleted{% endif %}: <strong>{{ entry.object_repr }}</strong>
+                        </p>
+                        <span class="text-xxs text-slate-400 block mt-1">{{ entry.action_time|timesince }} ago · {{ entry.content_type.name|capfirst }}</span>
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="p-4 text-center text-slate-400 text-xs">
+                      <p>No recent system operations</p>
+                    </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
@@ -300,7 +308,7 @@
                 class="absolute right-0 mt-1.5 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-premium py-2 text-xs z-50">
                 <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-700/60 mb-2">
                   <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">{{ user.get_full_name|default:user.username }}</p>
-                  <p class="text-xxs text-slate-400 truncate mt-0.5">Staff Administrator</p>
+                  <p class="text-xxs text-slate-400 truncate mt-0.5">{% if user.is_superuser %}Superuser{% else %}Staff Administrator{% endif %}</p>
                 </div>
                 
                 <a href="{% url 'admin:password_change' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/40 text-slate-600 dark:text-slate-300">
@@ -365,12 +373,7 @@
       <!-- FOOTER -->
       <footer class="mt-auto border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 py-4 px-8 text-center text-xs text-slate-400">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-[1600px] w-full mx-auto">
-          <p>© 2026 Nova Admin. Created with Tailwind & Alpine.js.</p>
-          <div class="flex items-center gap-4">
-            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Documentation</a>
-            <span>·</span>
-            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">API Support</a>
-          </div>
+          <p>© {% now "Y" %} {{ nova_settings.SITE_HEADER|default:"Nova Admin" }}.</p>
         </div>
       </footer>
 
@@ -396,18 +399,20 @@
       <div class="max-h-80 overflow-y-auto p-3 text-xs text-slate-600 dark:text-slate-400">
         <p class="px-3 py-1 text-xxs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Quick Navigation</p>
         <div class="mt-1.5 space-y-0.5">
-          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
-            <span class="font-medium">User Accounts Admin</span>
-            <span class="text-slate-400 text-xxs font-mono">auth/user</span>
-          </a>
-          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
-            <span class="font-medium">Security Groups</span>
-            <span class="text-slate-400 text-xxs font-mono">auth/group</span>
-          </a>
-          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
-            <span class="font-medium">Recent Audit Logs</span>
-            <span class="text-slate-400 text-xxs font-mono">admin/logentry</span>
-          </a>
+          {% if app_list %}
+            {% for app in app_list %}
+              {% for model in app.models %}
+                <a href="{{ model.admin_url }}"
+                   x-show="!searchQuery || '{{ model.name|lower }}'.includes(searchQuery.toLowerCase()) || '{{ model.object_name|lower }}'.includes(searchQuery.toLowerCase())"
+                   class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <span class="font-medium">{{ model.name }}</span>
+                  <span class="text-slate-400 text-xxs font-mono">{{ app.app_label }}/{{ model.object_name|lower }}</span>
+                </a>
+              {% endfor %}
+            {% endfor %}
+          {% else %}
+            <p class="px-3 py-2 text-slate-400 text-center">No modules registered</p>
+          {% endif %}
         </div>
       </div>
     </div>

@@ -78,7 +78,7 @@
         </button>
         <button type="button" @click="currentFormTab = 'inlines'" class="px-4 py-2 rounded-lg transition-all"
           :class="currentFormTab === 'inlines' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'">
-          Related Connections ({% img_badges %}{{ inline_admin_formsets|length }})
+          Related Connections ({{ inline_admin_formsets|length }})
         </button>
       </div>
     {% endif %}
