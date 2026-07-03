@@ -109,8 +109,8 @@
                   {% for field in line %}
                     <div class="space-y-1 {% if field.field.errors %}has-error{% endif %}">
                       
-                      <!-- Floating Label field wrapper in Tailwind -->
-                      <div class="relative">
+                      <!-- Input field wrapper with label above layout -->
+                      <div class="flex flex-col gap-1.5">
                         <!-- Custom checks if field is checkbox or standard input -->
                         {% if field|nova_is_checkbox %}
                           <div class="flex items-center gap-3 py-3">
@@ -124,20 +124,19 @@
                           </div>
                         {% elif field|nova_is_file %}
                           <!-- Drag & Drop Preview Wrapper -->
-                          <div class="p-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 transition-colors hover:bg-slate-50"
+                          <div class="p-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 transition-colors hover:bg-slate-50 w-full"
                                x-data="{ previewId: 'preview_' + '{{ field.field.id_for_label }}' }"
                                x-init="NovaFilePreview.bind(document.getElementById('{{ field.field.id_for_label }}'), previewId)">
-                            <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{{ field.field.label }}</label>
+                            <label class="block text-xxs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{{ field.field.label }}</label>
                             {{ field.field }}
                             <div :id="previewId" class="mt-2"></div>
                           </div>
                         {% else %}
-                          <!-- Text / Date / Number with floating labels -->
-                          {{ field.field }}
-                          <label for="{{ field.field.id_for_label }}" class="absolute left-4 top-3 text-xs text-slate-400 dark:text-slate-500 transition-all pointer-events-none origin-[0]
-                                 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
-                                 peer-focus:scale-95 peer-focus:-translate-y-2.5 peer-focus:text-blue-500
-                                 -translate-y-2.5 scale-95">{{ field.field.label }}</label>
+                          <!-- Text / Date / Number with label above input -->
+                          <label for="{{ field.field.id_for_label }}" class="text-xxs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{{ field.field.label }}</label>
+                          <div class="relative w-full">
+                            {{ field.field }}
+                          </div>
                           
                           {% if field.field.help_text %}
                             <p class="text-xxs text-slate-400 mt-1">{{ field.field.help_text|safe }}</p>

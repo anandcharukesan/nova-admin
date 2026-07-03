@@ -103,8 +103,9 @@
       <!-- Navigation Content -->
       <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-1 scrollbar-thin">
         {% block nav-sidebar %}
-          {% if app_list or available_apps %}
-            {% for app in app_list|default:available_apps %}
+          {% get_nova_apps as apps %}
+          {% if apps %}
+            {% for app in apps %}
               <div class="mb-4" x-data="{ expanded: true }">
                 <!-- App Title Header -->
                 <button @click="expanded = !expanded" class="w-full flex items-center justify-between text-left px-2 py-1.5 text-xxs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-slate-600 transition-colors">

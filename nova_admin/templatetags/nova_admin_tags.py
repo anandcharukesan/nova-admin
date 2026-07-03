@@ -1,6 +1,7 @@
 import json
 from django import template
 from django.utils.safestring import mark_safe
+from nova_admin.utils import get_nova_admin_settings
 
 register = template.Library()
 
@@ -187,7 +188,6 @@ def get_nova_settings():
     """
     Get the complete Nova Admin merged settings dictionary.
     """
-    from nova_admin.utils import get_nova_admin_settings
     return get_nova_admin_settings()
 
 
@@ -196,7 +196,6 @@ def get_nova_setting(key, default=""):
     """
     Get a specific config property from Nova Admin settings.
     """
-    from nova_admin.utils import get_nova_admin_settings
     return get_nova_admin_settings().get(key, default)
 
 
@@ -238,5 +237,31 @@ def get_nova_chart_data():
             {"day": "Sat", "count": 3, "percent": 30},
             {"day": "Sun", "count": 4, "percent": 40},
         ]
+
+
+@register.simple_tag(takes_context=True)
+def get_nova_apps(context):
+    """
+    Get the complete app list with models dynamically from admin.site,
+    ensuring it is always available on all admin page contexts.
+    """
+    request = context.get("request")
+    if not request:
+        return []
+    
+    # 1. Try available_apps or app_list in template context
+    apps_list = context.get("available_apps") or context.get("app_list")
+    if apps_list:
+        return apps_list
+        
+    # 2. Try default admin site get_app_list
+    try:
+        from django.contrib import admin
+        return admin.site.get_app_list(request)
+    except Exception:
+        pass
+        
+    return []
+
 
 
