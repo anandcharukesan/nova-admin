@@ -12,6 +12,7 @@ nova_admin/apps.py
 nova_admin/context_processors.py
 nova_admin/middleware.py
 nova_admin/static/nova_admin/css/theme.css
+nova_admin/static/nova_admin/js/alpine.js
 nova_admin/static/nova_admin/js/theme.js
 nova_admin/templates/admin/app_index.html
 nova_admin/templates/admin/base.html
