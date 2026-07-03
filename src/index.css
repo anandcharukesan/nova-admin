@@ -190,3 +190,74 @@ body {
   cursor: pointer;
 }
 
+/* Premium Form Inputs styling for Django change forms */
+.change-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="image"]):not([type="hidden"]),
+.change-form select,
+.change-form textarea {
+  display: block;
+  width: 100% !important;
+  padding: 0.75rem 1rem !important; /* py-3 px-4 */
+  font-size: 0.75rem !important; /* text-xs */
+  border-radius: 0.75rem !important; /* rounded-xl */
+  border: 1px solid var(--color-border) !important;
+  background-color: var(--color-card) !important;
+  color: var(--color-text) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.change-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="image"]):not([type="hidden"]):focus,
+.change-form select:focus,
+.change-form textarea:focus {
+  outline: none !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 1px var(--color-primary) !important;
+  background-color: var(--color-card) !important;
+}
+
+/* Hide screen-reader only elements */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Table Header Typography & Contrast */
+#result_list thead th {
+  color: var(--color-text-muted) !important;
+  font-size: 0.70rem !important; /* text-[10px] */
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+}
+
+#result_list thead th a {
+  color: var(--color-text-muted) !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+
+#result_list thead th a:hover {
+  color: var(--color-text) !important;
+}
+
+/* Table Body Links Clickability */
+#result_list tbody th a,
+#result_list tbody td a {
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+  transition: color 0.2s ease;
+}
+
+#result_list tbody th a:hover,
+#result_list tbody td a:hover {
+  color: var(--color-primary-hover) !important;
+  text-decoration: underline !important;
+}
+
+

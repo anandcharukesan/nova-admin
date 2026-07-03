@@ -25,6 +25,7 @@ nova_admin/templates/admin/delete_confirmation.html
 nova_admin/templates/admin/index.html
 nova_admin/templates/admin/login.html
 nova_admin/templates/admin/object_history.html
+nova_admin/templates/admin/pagination.html
 nova_admin/templates/admin/search_form.html
 nova_admin/templates/admin/submit_line.html
 nova_admin/templatetags/__init__.py

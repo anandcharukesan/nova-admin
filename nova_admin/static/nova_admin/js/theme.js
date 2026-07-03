@@ -104,11 +104,30 @@ const NovaFilePreview = {
   }
 };
 
+// Form initialization helper
+const NovaForms = {
+  init() {
+    const forms = document.querySelectorAll('.change-form form');
+    forms.forEach(form => {
+      const inputs = form.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="image"]):not([type="hidden"]), select, textarea');
+      inputs.forEach(input => {
+        input.classList.add('peer');
+        if (!input.getAttribute('placeholder')) {
+          input.setAttribute('placeholder', ' ');
+        }
+      });
+    });
+  }
+};
+
 // Export to window
 window.NovaTheme = NovaTheme;
 window.NovaFilePreview = NovaFilePreview;
+window.NovaForms = NovaForms;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
   NovaTheme.init();
+  NovaForms.init();
 });
+

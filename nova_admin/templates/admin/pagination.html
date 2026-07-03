@@ -1,0 +1,22 @@
+{% load admin_list %}
+{% load i18n %}
+<nav class="paginator flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400 font-semibold" aria-labelledby="pagination">
+    <h2 id="pagination" class="visually-hidden">{% blocktranslate with name=cl.opts.verbose_name_plural %}Pagination {{ name }}{% endblocktranslate %}</h2>
+    
+    <div class="flex items-center gap-1.5 order-2 sm:order-1">
+      {% if pagination_required %}
+        <ul class="flex items-center gap-1.5">
+          {% for i in page_range %}
+            <li class="inline-block">{% paginator_number cl i %}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="flex items-center gap-3 order-1 sm:order-2">
+      <span>{{ cl.result_count }} {% if cl.result_count == 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endif %}</span>
+      {% if show_all_url %}
+        <a href="{{ show_all_url }}" class="showall text-blue-600 hover:text-blue-700 hover:underline">{% translate 'Show all' %}</a>
+      {% endif %}
+    </div>
+</nav>
