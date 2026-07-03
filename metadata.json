@@ -1,0 +1,6 @@
+{
+  "name": "Nova Admin",
+  "description": "An elegant, responsive Django admin theme with premium components, dashboards, Alpine.js, Chart.js, and dark mode support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

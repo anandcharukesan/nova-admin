@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ nova_settings.SITE_TITLE|default:"Nova Admin" }}{% endblock %}
+
+{% block branding %}
+<div class="flex items-center gap-3">
+  {% if nova_settings.LOGO %}
+    <img src="{{ nova_settings.LOGO }}" alt="Logo" class="w-9 h-9 object-contain rounded-xl" />
+  {% else %}
+    <!-- Glowing Hexagonal Logo -->
+    <div class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md shadow-blue-500/20 ring-1 ring-white/10">
+      <svg class="w-5 h-5 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    </div>
+  {% endif %}
+  <div>
+    <h1 id="site-name" class="text-sm font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+      {{ nova_settings.SITE_HEADER|default:"Nova Admin" }}
+    </h1>
+    <p class="text-xxs font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Control Center</p>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block nav-global %}{% endblock %}

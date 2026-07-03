@@ -1,0 +1,126 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Nova Admin</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="{% static 'nova_admin/css/theme.css' %}" />
+  <script src="{% static 'nova_admin/js/theme.js' %}"></script>
+</head>
+<body class="h-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-300 p-4">
+
+  <div class="max-w-md w-full animate-fade-in space-y-6">
+    
+    <!-- Branding Logo Header -->
+    <div class="text-center">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-lg shadow-blue-500/20 ring-4 ring-blue-50 dark:ring-blue-950/40 mb-3">
+        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white leading-tight">Nova <span class="text-blue-600 dark:text-blue-400 font-medium">Admin</span></h2>
+      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 uppercase font-mono tracking-widest">Administrative Gateway</p>
+    </div>
+
+    <!-- Login Card container -->
+    <div class="nova-card p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-premium rounded-custom">
+      
+      <!-- Error Notices -->
+      {% if form.errors and not form.non_field_errors %}
+        <div class="p-3.5 mb-5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-semibold rounded-xl flex items-center gap-2">
+          <svg class="w-4.5 h-4.5 text-rose-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          <p>{% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}</p>
+        </div>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+          <div class="p-3.5 mb-5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-semibold rounded-xl flex items-center gap-2">
+            <svg class="w-4.5 h-4.5 text-rose-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <p>{{ error }}</p>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if user.is_authenticated %}
+        <div class="p-3.5 mb-5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-xl flex items-center gap-2">
+          <svg class="w-4.5 h-4.5 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          <p>{% blocktranslate trimmed %}You are logged in as {{ username }}, but you do not have permission to access this page.{% endblocktranslate %}</p>
+        </div>
+      {% endif %}
+
+      <!-- Login Form -->
+      <form action="{{ app_path }}" method="post" id="login-form" class="space-y-4">
+        {% csrf_token %}
+        
+        <!-- Username input with floating label structure -->
+        <div class="relative">
+          <input type="text" name="username" id="id_username" required autofocus placeholder=" "
+                 class="peer w-full px-4 py-3 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-transparent transition-all">
+          <label for="id_username" class="absolute left-4 top-3 text-xs text-slate-400 dark:text-slate-500 transition-all pointer-events-none origin-[0]
+                 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
+                 peer-focus:scale-95 peer-focus:-translate-y-2.5 peer-focus:text-blue-500
+                 -translate-y-2.5 scale-95">Username</label>
+        </div>
+
+        <!-- Password input with floating label structure -->
+        <div class="relative">
+          <input type="password" name="password" id="id_password" required placeholder=" "
+                 class="peer w-full px-4 py-3 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-transparent transition-all">
+          <label for="id_password" class="absolute left-4 top-3 text-xs text-slate-400 dark:text-slate-500 transition-all pointer-events-none origin-[0]
+                 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
+                 peer-focus:scale-95 peer-focus:-translate-y-2.5 peer-focus:text-blue-500
+                 -translate-y-2.5 scale-95">Password</label>
+        </div>
+
+        <!-- Extra details (Remember preference) -->
+        <div class="flex items-center justify-between text-xxs font-semibold text-slate-500 mt-2">
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" name="remember" class="w-3.5 h-3.5 rounded border-slate-200 text-blue-600 focus:ring-0">
+            <span>Remember computer</span>
+          </label>
+          <a href="#" class="text-blue-600 hover:underline">Forgot password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold rounded-xl text-xs shadow-md shadow-blue-500/15 transition-all mt-4 flex items-center justify-center gap-2">
+          <span>Authorize and Access</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+        </button>
+      </form>
+
+    </div>
+
+    <!-- Quick Footer instructions -->
+    <div class="flex items-center justify-between px-3 text-xxs text-slate-400">
+      <span>Django 5+ Security Active</span>
+      <button onclick="NovaTheme.toggle()" class="hover:text-slate-600 dark:hover:text-slate-300 font-semibold uppercase tracking-wider">Change theme</button>
+    </div>
+
+  </div>
+
+</body>
+</html>

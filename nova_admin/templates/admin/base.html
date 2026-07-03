@@ -1,0 +1,442 @@
+{% load i18n static nova_admin_tags %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_direction as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:"rtl,ltr" }}" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{% endblock %}</title>
+
+  <!-- Google Fonts: Inter (SANS), Space Grotesk (Display), JetBrains Mono (Technical) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS Play CDN (Highly recommended for reusable Django theme packages to run instantly) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            primary: '{{ nova_settings.PRIMARY_COLOR|default:"#2563EB" }}',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+            bgLight: '#F8FAFC',
+            bgDark: '#0F172A',
+          },
+          boxShadow: {
+            premium: '0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 8px -1px rgba(15, 23, 42, 0.02)',
+            hover: '0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 16px -6px rgba(15, 23, 42, 0.04)',
+          },
+          borderRadius: {
+            custom: '16px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Alpine.js Core -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Nova Admin Custom theme files -->
+  <link rel="stylesheet" href="{% static 'nova_admin/css/theme.css' %}" />
+  <script src="{% static 'nova_admin/js/theme.js' %}"></script>
+
+  {% block extrahead %}{% endblock %}
+  {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+</head>
+
+<body class="{% block bodyclass %}default{% endblock %} h-full text-slate-800 dark:text-slate-100 antialiased"
+  x-data="{ 
+    sidebarCollapsed: {% if nova_settings.SIDEBAR_COLLAPSED %}true{% else %}false{% endif %},
+    commandPaletteOpen: false,
+    userMenuOpen: false,
+    notificationMenuOpen: false,
+    activeTab: 'all',
+    searchQuery: '',
+    shortcutsModalOpen: false,
+    scrolled: false,
+    init() {
+      window.addEventListener('scroll', () => { this.scrolled = window.scrollY > 10; });
+      window.addEventListener('toggle-command-palette', () => { this.commandPaletteOpen = !this.commandPaletteOpen; });
+      window.addEventListener('close-all-overlays', () => {
+        this.commandPaletteOpen = false;
+        this.userMenuOpen = false;
+        this.notificationMenuOpen = false;
+        this.shortcutsModalOpen = false;
+      });
+    }
+  }">
+
+  <!-- Outer Shell with dynamic light/dark class from local storage -->
+  <div class="min-h-screen flex bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+    <aside class="fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 shadow-premium"
+      :class="sidebarCollapsed ? 'w-20' : 'w-72'"
+      id="nova-sidebar"
+      aria-label="Sidebar">
+
+      <!-- Sidebar Branding Header -->
+      <div class="h-16 flex items-center justify-between px-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div class="flex items-center gap-3 overflow-hidden" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-x-4">
+          {% block sidebar_branding %}
+            {% include "admin/base_site.html" with branding=True %}
+          {% endblock %}
+        </div>
+        
+        <!-- Collapsed Mini Icon branding -->
+        <div x-show="sidebarCollapsed" class="mx-auto text-blue-600 dark:text-blue-400">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+
+        <button @click="sidebarCollapsed = !sidebarCollapsed" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" title="Toggle Menu">
+          <svg class="w-5 h-5 transform transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick Search inside Sidebar (Hidden when collapsed) -->
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900" x-show="!sidebarCollapsed">
+        <div class="relative">
+          <input type="text" placeholder="Jump to app... (Ctrl+K)" readonly @click="commandPaletteOpen = true"
+            class="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer text-slate-500 dark:text-slate-400">
+          <svg class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Navigation Content -->
+      <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-1 scrollbar-thin">
+        {% block nav-sidebar %}
+          {% if app_list %}
+            {% for app in app_list %}
+              <div class="mb-4" x-data="{ expanded: true }">
+                <!-- App Title Header -->
+                <button @click="expanded = !expanded" class="w-full flex items-center justify-between text-left px-2 py-1.5 text-xxs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-slate-600 transition-colors">
+                  <span x-show="!sidebarCollapsed">{{ app.name }}</span>
+                  <span x-show="sidebarCollapsed" class="text-center w-full">···</span>
+                  <svg x-show="!sidebarCollapsed" class="w-3.5 h-3.5 transform transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <!-- Models Submenu -->
+                <div x-show="expanded || sidebarCollapsed" x-collapse class="mt-1 space-y-0.5">
+                  {% for model in app.models %}
+                    <a href="{{ model.admin_url }}" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all duration-200 group {% nova_active_class app.app_label model.object_name %}"
+                       :class="sidebarCollapsed ? 'justify-center py-2.5' : ''"
+                       title="{{ model.name }}">
+                      <!-- Model Icons (Fallback vector representations) -->
+                      <span class="text-slate-400 group-hover:text-blue-500 transition-colors">
+                        {% if "user" in model.object_name|lower or "group" in model.object_name|lower %}
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        {% else %}
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                        {% endif %}
+                      </span>
+                      <span x-show="!sidebarCollapsed" class="truncate font-medium">{{ model.name }}</span>
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <!-- Fallback empty sidebar index items -->
+            <div class="text-center py-6" x-show="!sidebarCollapsed">
+              <p class="text-xs text-slate-400">No applications registered in INSTALLED_APPS</p>
+            </div>
+          {% endif %}
+        {% endblock %}
+      </nav>
+
+      <!-- Sidebar Footer (User identity context) -->
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40" x-show="!sidebarCollapsed">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 uppercase">
+            {{ user|nova_initials }}
+          </div>
+          <div class="truncate">
+            <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ user.get_full_name|default:user.username }}</p>
+            <p class="text-xxs text-slate-400 truncate">{{ user.email|default:"Staff Administrator" }}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col transition-all duration-300 min-w-0" :class="sidebarCollapsed ? 'pl-20' : 'pl-72'">
+
+      <!-- TOP NAVBAR -->
+      <header class="sticky top-0 z-30 h-16 border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300"
+        :class="scrolled ? 'bg-white/80 dark:bg-slate-950/85 backdrop-blur shadow-sm border-slate-200/50 dark:border-slate-800/50' : 'bg-white dark:bg-slate-900'">
+        
+        <div class="h-full flex items-center justify-between px-6">
+          
+          <!-- Breadcrumbs and context -->
+          <div class="flex items-center gap-4">
+            {% if nova_settings.SHOW_BREADCRUMBS %}
+            {% block breadcrumbs %}
+              <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                <a href="{% url 'admin:index' %}" class="hover:text-blue-500 transition-colors">Home</a>
+                {% if title %}
+                  <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                  <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ title }}</span>
+                {% endif %}
+              </div>
+            {% endblock %}
+            {% endif %}
+          </div>
+
+          <!-- Top Toolbar Right Actions -->
+          <div class="flex items-center gap-2">
+            
+            <!-- Global Search Button (Cmd+K triggers Command Palette) -->
+            {% if nova_settings.SHOW_GLOBAL_SEARCH %}
+            <button @click="commandPaletteOpen = true" class="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 border border-slate-200/60 dark:border-slate-700 rounded-xl transition-colors" title="Ctrl+K to Search">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <span class="hidden md:inline font-medium">Quick Search...</span>
+              <kbd class="hidden md:inline-flex items-center px-1.5 py-0.5 text-xxs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 rounded-lg shadow-sm">⌘K</kbd>
+            </button>
+            {% endif %}
+
+            <!-- Keyboard Shortcuts Button -->
+            <button @click="shortcutsModalOpen = true" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Keyboard Shortcuts">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </button>
+
+            <!-- Theme Switcher -->
+            <div class="relative" x-data="{ open: false }">
+              <button @click="open = !open" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Theme Mode">
+                <!-- Light icon -->
+                <svg x-show="currentTheme === 'light'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" /></svg>
+                <!-- Dark icon -->
+                <svg x-show="currentTheme === 'dark'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                <!-- Auto icon -->
+                <svg x-show="currentTheme === 'auto'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              </button>
+
+              <div x-show="open" @click.outside="open = false" x-transition.origin.top.right class="absolute right-0 mt-1.5 w-36 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-premium py-1.5 text-xs z-50">
+                <button @click="currentTheme = 'light'; NovaTheme.setTheme('light'); open = false;" class="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" /></svg>
+                  <span>Light Mode</span>
+                </button>
+                <button @click="currentTheme = 'dark'; NovaTheme.setTheme('dark'); open = false;" class="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  <span>Dark Mode</span>
+                </button>
+                <button @click="currentTheme = 'auto'; NovaTheme.setTheme('auto'); open = false;" class="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                  <span>System Auto</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Notifications Dropdown -->
+            <div class="relative">
+              <button @click="notificationMenuOpen = !notificationMenuOpen" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors relative" title="Notifications">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+              </button>
+
+              <div x-show="notificationMenuOpen" @click.outside="notificationMenuOpen = false" x-transition.origin.top.right
+                class="absolute right-0 mt-1.5 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-premium z-50 overflow-hidden">
+                <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                  <span class="font-bold text-xs">Notifications</span>
+                  <button class="text-xxs text-blue-600 hover:underline">Mark all as read</button>
+                </div>
+                <div class="divide-y divide-slate-100 dark:divide-slate-700/60 max-h-64 overflow-y-auto">
+                  <a href="#" class="block p-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                    <p class="text-xs text-slate-800 dark:text-slate-200 leading-tight">System update successfully finished</p>
+                    <span class="text-xxs text-slate-400 block mt-1">12 mins ago · System</span>
+                  </a>
+                  <a href="#" class="block p-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                    <p class="text-xs text-slate-800 dark:text-slate-200 leading-tight">New user registered: <strong>Sarah Connor</strong></p>
+                    <span class="text-xxs text-slate-400 block mt-1">1 hour ago · Auth</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Avatar Dropdown -->
+            <div class="relative">
+              <button @click="userMenuOpen = !userMenuOpen" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus:outline-none">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs uppercase shadow-sm shadow-blue-600/20">
+                  {{ user|nova_initials }}
+                </div>
+                <span class="hidden sm:inline text-xs font-semibold text-slate-700 dark:text-slate-200">{{ user.username }}</span>
+                <svg class="hidden sm:block w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div x-show="userMenuOpen" @click.outside="userMenuOpen = false" x-transition.origin.top.right
+                class="absolute right-0 mt-1.5 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-premium py-2 text-xs z-50">
+                <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-700/60 mb-2">
+                  <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">{{ user.get_full_name|default:user.username }}</p>
+                  <p class="text-xxs text-slate-400 truncate mt-0.5">Staff Administrator</p>
+                </div>
+                
+                <a href="{% url 'admin:password_change' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/40 text-slate-600 dark:text-slate-300">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  <span>Change Password</span>
+                </a>
+                
+                <a href="{% url 'admin:logout' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/40 text-rose-600 dark:text-rose-400 font-semibold border-t border-slate-100 dark:border-slate-700/40 mt-1 pt-2">
+                  <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  <span>Log out</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT STAGE -->
+      <main class="flex-1 p-8 space-y-6 max-w-[1600px] w-full mx-auto animate-fade-in">
+
+        <!-- Django Django Messages Framework Styled as Alerts -->
+        {% if messages %}
+          <div class="space-y-3">
+            {% for message in messages %}
+              <div class="flex items-center justify-between p-4 rounded-xl border {% if message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-800/50 dark:text-emerald-300{% elif message.tags == 'error' or message.tags == 'danger' %}bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-800/50 dark:text-rose-300{% else %}bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/20 dark:border-blue-800/50 dark:text-blue-300{% endif %}"
+                   x-data="{ show: true }" x-show="show">
+                <div class="flex items-center gap-3">
+                  {% if message.tags == 'success' %}
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {% else %}
+                    <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {% endif %}
+                  <p class="text-xs font-semibold">{{ message }}</p>
+                </div>
+                <button @click="show = false" class="p-1 hover:bg-black/5 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- HEADER SUMMARY -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/50 dark:border-slate-800 pb-5">
+          <div>
+            <h2 class="text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white">{% block content_title %}{{ title }}{% endblock %}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{% block content_subtitle %}Manage app configurations, review operations and control security parameters.{% endblock %}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            {% block object-tools %}{% endblock %}
+          </div>
+        </div>
+
+        <!-- MIDDLEWARE STAGE CONTENT -->
+        {% block content %}
+          {{ content }}
+        {% endblock %}
+
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="mt-auto border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 py-4 px-8 text-center text-xs text-slate-400">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-[1600px] w-full mx-auto">
+          <p>© 2026 Nova Admin. Created with Tailwind & Alpine.js.</p>
+          <div class="flex items-center gap-4">
+            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Documentation</a>
+            <span>·</span>
+            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">API Support</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- COMMAND PALETTE MODAL (Ctrl+K) -->
+  {% if nova_settings.SHOW_GLOBAL_SEARCH %}
+  <div x-show="commandPaletteOpen" class="fixed inset-0 z-50 overflow-y-auto p-4 md:p-20" role="dialog" aria-modal="true" style="display: none;">
+    <!-- Backdrop overlay -->
+    <div class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity" @click="commandPaletteOpen = false"></div>
+
+    <!-- Search Modal Container -->
+    <div class="mx-auto max-w-2xl transform divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-slate-900/5 dark:ring-white/10 transition-all animate-fade-in mt-10">
+      <div class="relative">
+        <svg class="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" x-model="searchQuery" class="h-12 w-full border-0 bg-transparent pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 text-sm" placeholder="Search Django models, logs, settings... (Esc to close)">
+      </div>
+
+      <!-- Quick suggestions -->
+      <div class="max-h-80 overflow-y-auto p-3 text-xs text-slate-600 dark:text-slate-400">
+        <p class="px-3 py-1 text-xxs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Quick Navigation</p>
+        <div class="mt-1.5 space-y-0.5">
+          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <span class="font-medium">User Accounts Admin</span>
+            <span class="text-slate-400 text-xxs font-mono">auth/user</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <span class="font-medium">Security Groups</span>
+            <span class="text-slate-400 text-xxs font-mono">auth/group</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <span class="font-medium">Recent Audit Logs</span>
+            <span class="text-slate-400 text-xxs font-mono">admin/logentry</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- KEYBOARD SHORTCUTS MODAL -->
+  <div x-show="shortcutsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+    <!-- Backdrop overlay -->
+    <div class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity" @click="shortcutsModalOpen = false"></div>
+
+    <!-- Modal Box -->
+    <div class="relative bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl ring-1 ring-slate-900/5 dark:ring-white/10 z-10 animate-fade-in">
+      <h3 class="text-base font-bold font-display text-slate-900 dark:text-white mb-4">Command Center & Shortcuts</h3>
+      
+      <div class="space-y-3.5 text-xs">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+          <span class="text-slate-600 dark:text-slate-400">Open Command Palette</span>
+          <kbd class="px-2 py-0.5 font-mono bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-500 rounded shadow-sm">Ctrl + K</kbd>
+        </div>
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+          <span class="text-slate-600 dark:text-slate-400">Toggle Sidebar Collapse</span>
+          <kbd class="px-2 py-0.5 font-mono bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-500 rounded shadow-sm">S</kbd>
+        </div>
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+          <span class="text-slate-600 dark:text-slate-400">Close Overlay / Menu</span>
+          <kbd class="px-2 py-0.5 font-mono bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-500 rounded shadow-sm">Esc</kbd>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button @click="shortcutsModalOpen = false" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/10 transition-colors">Got it</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

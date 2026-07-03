@@ -1,0 +1,144 @@
+{% extends "admin/base.html" %}
+{% load i18n admin_urls static admin_list nova_admin_tags %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ media.css }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list {% endblock %}
+
+{% block breadcrumbs %}
+<div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+  <a href="{% url 'admin:index' %}" class="hover:text-blue-500 transition-colors">Home</a>
+  <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+  <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}" class="hover:text-blue-500 transition-colors">{{ cl.opts.app_config.verbose_name }}</a>
+  <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+  <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ cl.opts.verbose_name_plural|capfirst }}</span>
+</div>
+{% endblock %}
+
+{% block content_title %}{{ cl.opts.verbose_name_plural|capfirst }}{% endblock %}
+{% block content_subtitle %}Review database instances, execute bulk actions, filter tables, and export models.{% endblock %}
+
+{% block object-tools %}
+<div class="flex items-center gap-2">
+  {% block object-tools-items %}
+    {% change_list_object_tools %}
+  {% endblock %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ filterSidebarOpen: false }">
+
+  <!-- Search & Filter Bar Actions -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    
+    <!-- Left: Django Search Form -->
+    <div class="flex-1 max-w-md">
+      {% block search %}
+        {% search_form cl %}
+      {% endblock %}
+    </div>
+
+    <!-- Right: Trigger filters side panel -->
+    <div class="flex items-center gap-2">
+      {% if cl.has_filters %}
+        <button @click="filterSidebarOpen = !filterSidebarOpen" class="px-4 py-2.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>Filters</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold font-mono text-xxs">Active</span>
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Grid holding Tables + Filters Sidebar -->
+  <div class="flex flex-col lg:flex-row items-start gap-6 relative">
+    
+    <!-- Left: Core results container -->
+    <div class="flex-1 w-full min-w-0 space-y-4">
+      
+      <!-- Django Admin Actions (Bulk Operations Panel) -->
+      {% if cl.formset and cl.formset.errors %}
+        <div class="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl">
+          {{ cl.formset.errors }}
+        </div>
+      {% endif %}
+
+      <form id="changelist-form" method="post" {% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>
+        {% csrf_token %}
+        
+        <!-- Render Django standard action form -->
+        {% if cl.action_form and cl.actions %}
+          <div class="p-4 mb-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
+            <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Bulk Actions:</span>
+            <!-- Custom action selects -->
+            <div class="flex items-center gap-2">
+              {{ cl.action_form.action }}
+              <button type="submit" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xxs font-bold shadow-md shadow-blue-500/10 transition-colors uppercase" title="Execute bulk operation">
+                Execute
+              </button>
+            </div>
+            <!-- Dynamic selection trackers -->
+            {% if cl.use_bookmarks %}
+              <span class="text-xxs text-slate-400 font-semibold ml-auto hidden md:block">Selected items will save audit bookmarks</span>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <!-- Overridden responsive list table block -->
+        <div class="nova-card overflow-hidden shadow-premium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <div class="overflow-x-auto">
+            {% block result_list %}
+              {% result_list cl %}
+            {% endblock %}
+          </div>
+
+          <!-- Pagination details -->
+          <div class="p-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
+            {% block pagination %}
+              {% pagination cl %}
+            {% endblock %}
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Right: Sticky Filter Panel Drawer -->
+    {% if cl.has_filters %}
+      <aside x-show="filterSidebarOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform translate-x-4"
+        class="w-full lg:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-premium p-5 shrink-0 sticky top-20 z-20">
+        <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 class="text-xs font-bold font-display uppercase tracking-wider">Query Filter</h3>
+          <button @click="filterSidebarOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div class="divide-y divide-slate-100 dark:divide-slate-800 mt-4 space-y-4 max-h-[500px] overflow-y-auto pr-1">
+          {% for spec in cl.filter_specs %}
+            <div class="pt-4 first:pt-0">
+              <h4 class="text-xxs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{{ spec.title }}</h4>
+              <ul class="space-y-1 text-xs">
+                {% for choice in spec.choices %}
+                  <li>
+                    <a href="{{ choice.query_string|iriencode }}" class="block px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors {% if choice.selected %}bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-semibold{% else %}text-slate-600 dark:text-slate-400{% endif %}">
+                      {{ choice.display }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+      </aside>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

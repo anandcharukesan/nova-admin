@@ -1,0 +1,53 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} app-index {% endblock %}
+
+{% block breadcrumbs %}
+<div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+  <a href="{% url 'admin:index' %}" class="hover:text-blue-500 transition-colors">Home</a>
+  <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+  <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ app_list.0.name }} App Index</span>
+</div>
+{% endblock %}
+
+{% block content_title %}{{ app_list.0.name }}{% endblock %}
+{% block content_subtitle %}App label: <code class="font-mono text-xs text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded-md">{{ app_list.0.app_label }}</code>. Review app configurations and active relational tables.{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for app in app_list %}
+      <div class="nova-card p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-full">
+        <div>
+          <h4 class="text-base font-bold text-slate-800 dark:text-slate-100">{{ app.name }} Models</h4>
+          <p class="text-xxs font-mono text-slate-400 mt-0.5">django.contrib.{{ app.app_label }}</p>
+        </div>
+        
+        <div class="mt-6 divide-y divide-slate-100 dark:divide-slate-800 flex-1">
+          {% for model in app.models %}
+            <div class="flex items-center justify-between py-3 text-xs">
+              <div>
+                <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ model.name }}</span>
+                <p class="text-xxs font-mono text-slate-400 mt-0.5">{{ model.object_name|lower }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                {% if model.add_url %}
+                  <a href="{{ model.add_url }}" class="p-1.5 text-slate-400 hover:text-blue-500 rounded-lg hover:bg-slate-50 transition-colors" title="Create Record">
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                  </a>
+                {% endif %}
+                {% if model.admin_url %}
+                  <a href="{{ model.admin_url }}" class="px-3 py-1.5 text-xxs font-bold bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl transition-all shadow-sm">
+                    Open Table
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

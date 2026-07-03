@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-nova-admin"
+version = "1.0.0"
+authors = [
+    { name = "Nova Admin Team", email = "support@novaadmin.com" }
+]
+description = "A premium, modern, responsive Django admin theme package built with Tailwind CSS and Alpine.js."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "Django>=4.2",
+]
+
+[tool.setuptools]
+packages = ["nova_admin", "nova_admin.templatetags", "nova_admin.utils", "nova_admin.widgets"]
+
+[tool.setuptools.package-data]
+"nova_admin" = [
+    "templates/**/*.html",
+    "static/**/*.css",
+    "static/**/*.js",
+    "static/**/*.png",
+    "static/**/*.svg",
+]

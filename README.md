@@ -1,0 +1,154 @@
+# Nova Admin
+
+[![PyPI version](https://img.shields.io/badge/pypi-v1.0.0-blue.svg)](https://pypi.org/project/django-nova-admin/)
+[![Django Support](https://img.shields.io/badge/django-4.2%20%7C%205.x-green.svg)](https://www.djangoproject.com/)
+[![Python Support](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-orange.svg)](LICENSE)
+
+**Nova Admin** is a premium, highly-polished, responsive Django admin theme package built from the ground up with **Tailwind CSS** and **Alpine.js**. Unlike heavy, inflexible legacy themes, Nova Admin delivers a modern, SaaS-like dashboard experience with minimal overhead and zero external dependencies (CDNs are bypassed; all JS, CSS, and font files are locally encapsulated).
+
+---
+
+## ✨ Key Features
+
+- **Modern SaaS Aesthetics**: Rounded corners, premium padding, soft shadows, and clean modern typography (Inter, Space Grotesk, JetBrains Mono).
+- **Dark Mode Support**: Flawless dark mode switching with persistent user preference storage (Light, Dark, and Auto/OS pref).
+- **Dynamic Metrics Dashboard**: Dynamically count registered database models, auth user logs, groups, and actual active user accounts with custom template tags.
+- **System Activity Charting**: Interactive bar chart powered by real-time audit log entries over the past 7 days.
+- **Command Palette (⌘K / Ctrl+K)**: Quick searchable command interface to navigate across Django models instantly.
+- **Responsive Layout**: Designed beautifully for mobile, tablet, and widescreen desktop configurations with a collapsible sidebar.
+- **No CDN Dependency**: Fully functional offline; all static assets are bundled inside the package.
+
+---
+
+## 🚀 Installation
+
+Nova Admin can be installed in any Django project directly from GitHub or via pip.
+
+```bash
+pip install git+https://github.com/yourusername/nova-admin.git
+```
+
+---
+
+## 🛠️ Configuration
+
+To activate the Nova Admin theme, update your project's `settings.py`:
+
+### 1. Register App
+Add `nova_admin` to your `INSTALLED_APPS` **before** the default `django.contrib.admin` app:
+
+```python
+INSTALLED_APPS = [
+    "nova_admin",  # Must be placed before Django's admin app
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    # ... your other apps
+]
+```
+
+### 2. Configure Context Processor
+Add the Nova Admin context processor to your `TEMPLATES` configuration in `settings.py` so variables are injected cleanly:
+
+```python
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "nova_admin.context_processors.nova_admin_context",  # Injects nova_settings
+            ],
+        },
+    },
+]
+```
+
+### 3. Add Theme Middleware
+Add the custom theme manager middleware to `MIDDLEWARE` to support theme preference cookies:
+
+```python
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "nova_admin.middleware.NovaAdminThemeMiddleware",  # Registers theme preference
+]
+```
+
+---
+
+## ⚙️ Customization Settings
+
+Nova Admin is highly customizable. You can control titles, logos, brand colors, and feature visibility from a central `NOVA_ADMIN` dictionary inside your `settings.py`:
+
+```python
+NOVA_ADMIN = {
+    # Custom Brand Information
+    "SITE_TITLE": "Enterprise Portal",
+    "SITE_HEADER": "Nova Enterprise",
+    "LOGO": "/static/images/brand-logo.png",  # Leave empty to use the glowing hexagonal logo
+    
+    # Custom Brand Styles
+    "PRIMARY_COLOR": "#4F46E5",  # Tailwind-compatible hex code for highlights, focus rings, and action buttons
+    
+    # Layout Configs & Feature Toggles
+    "SIDEBAR_COLLAPSED": False,      # Start with sidebar collapsed by default
+    "DARK_MODE": True,               # Support Dark mode switching
+    "SHOW_RECENT_ACTIONS": True,     # Enable Django audit logs in index
+    "SHOW_BREADCRUMBS": True,        # Show the breadcrumb tracker under top navbar
+    "SHOW_GLOBAL_SEARCH": True,      # Enable Cmd+K Quick-Search Command Palette
+}
+```
+
+---
+
+## 🎨 Custom Widgets
+
+Nova Admin ships with styled form inputs. You can use these in your custom admin forms or user inputs.
+
+```python
+from django import forms
+from nova_admin.widgets import NovaAdminTextInput, NovaAdminPasswordInput
+
+class CustomAdminForm(forms.Form):
+    username = forms.CharField(widget=NovaAdminTextInput())
+    password = forms.CharField(widget=NovaAdminPasswordInput())
+```
+
+---
+
+## 💻 Development & Rebuilding Frontend Assets
+
+If you are developing or forking the package and want to update the styled assets, a standard React & Tailwind sandbox environment is available at the root:
+
+### 1. Install Node Packages
+```bash
+npm install
+```
+
+### 2. Build Tailwind & Static CSS/JS
+To rebuild CSS and Javascript assets:
+```bash
+npm run build
+```
+This compiles assets through Vite and places the production-optimized scripts directly in `nova_admin/static/nova_admin/`.
+
+---
+
+## 📄 License
+
+Distributed under the Apache-2.0 License. See [LICENSE](LICENSE) for more information.
